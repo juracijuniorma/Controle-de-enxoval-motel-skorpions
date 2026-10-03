@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Controle de Enxoval Motel Skorpions</title>
+ 
+  <!-- Configurações PWA (Aplicativo) -->
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Enxoval Motel">
+
+  <!-- Manifest PWA gerado via Data URI -->
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name": "Controle de Enxoval Motel Skorpions",
+    "short_name": "Enxoval Motel",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#f4f6f9",
+    "theme_color": "#2c3e50",
+    "icons": [
+      {
+        "src": "data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232c3e50%22/><text y=%22.9em%22 font-size=%2270%22 x=%2215%22>🛏️</text></svg>",
+        "sizes": "192x192 512x512",
+        "type": "image/svg+xml",
+        "purpose": "any maskable"
+      }
+    ]
+  }'>
+
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --primary: #2c3e50;
+      --accent: #3498db;
+      --danger: #e74c3c;
+      --warning: #e67e22;
+      --success: #2ecc71;
+      --text: #333;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      padding: 12px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 10px 0 20px 0;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    /* Banner para Instalação de App */
+    .pwa-banner {
+      display: none;
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .pwa-banner button {
+      background: var(--success);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      width: auto;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Cards e Containers */
+    .dashboard-container,
+    .form-container,
+    .table-container {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    /* Formulário Grid Adaptável */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    input, select, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-submit {
+      background-color: var(--accent);
+    }
+
+    .btn-edit-mode {
+      background-color: var(--warning) !important;
+    }
+
+    .btn-cancel {
+      background-color: #95a5a6;
+      margin-top: 8px;
+    }
+
+    .btn-cancel:hover {
+      background-color: #7f8c8d;
+    }
+
+    .btn-export {
+      background-color: #27ae60;
+      width: auto;
+      padding: 8px 16px;
+    }
+
+    .btn-export:hover {
+      background-color: #219150;
+    }
+
+    /* Botões de Ação na Tabela */
+    .action-btns {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-print-action { background-color: #7f8c8d; }
+    .btn-edit-action { background-color: var(--warning); }
+    .btn-delete-action { background-color: var(--danger); }
+
+    /* Tabelas */
+    .status-table, .hist-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .status-table th, .status-table td,
+    .hist-table th, .hist-table td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .status-table th {
+      background-color: #f8f9fa;
+      color: var(--primary);
+      text-align: center;
+    }
+
+    .status-table td {
+      text-align: center;
+    }
+
+    .txt-limpo { color: var(--success); font-weight: bold; }
+    .txt-lavagem { color: var(--warning); font-weight: bold; }
+    .txt-avaria { color: var(--danger); font-weight: bold; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .badge-saida { background-color: #fdebd0; color: #b9770e; }
+    .badge-retorno { background-color: #d4efdf; color: #145a32; }
+    .badge-avaria { background-color: #fadbd8; color: #78281f; }
+    .badge-inicial { background-color: #ebdef0; color: #76448a; }
+
+    .audit-info {
+      font-size: 0.75rem;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+
+    /* Modal de Autenticação Segura */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .modal-card h3 {
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+
+    .modal-card p {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    /* Media Queries para Telas Maiores */
+    @media (min-width: 600px) {
+      body { padding: 20px; }
+      h1 { font-size: 2rem; }
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (min-width: 900px) {
+      .form-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Celulares (Menos de 768px) */
+    @media (max-width: 767px) {
+      .status-table, .status-table thead, .status-table tbody, .status-table th, .status-table td, .status-table tr,
+      .hist-table, .hist-table thead, .hist-table tbody, .hist-table th, .hist-table td, .hist-table tr {
+        display: block;
+      }
+
+      .status-table thead, .hist-table thead { display: none; }
+
+      .status-table tr, .hist-table tr {
+        margin-bottom: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+      }
+
+      .status-table td, .hist-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 0.9rem;
+      }
+
+      .status-table td:last-child, .hist-table td:last-child { border-bottom: none; }
+
+      .status-table td::before, .hist-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: var(--primary);
+        text-align: left;
+        margin-right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Banner de Instalação do Aplicativo -->
+    <div class="pwa-banner" id="pwaBanner">
+      <span>📱 Instalar este sistema como Aplicativo no Celular/PC?</span>
+      <button type="button" id="btnInstallPwa">Instalar App</button>
+    </div>
+
+    <h1>Controle de Enxoval Motel Skorpions</h1>
+
+    <!-- Tabela Resumo do Estado do Enxoval -->
+    <div class="dashboard-container">
+      <h2>Painel de Saldo de Enxoval</h2>
+      <table class="status-table">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Item do Enxoval</th>
+            <th>Estoque Limpo</th>
+            <th>Em Lavagem</th>
+            <th>Avarias</th>
+            <th>Total Geral</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align: left;" data-label="Item"><b>Lençol casal</b></td>
+            <td class="txt-limpo" data-label="Estoque Limpo" id="limpo-lencol">0</td>
+            <td class="txt-lavagem" data-label="Em Lavagem" id="lavagem-lencol">0</td>
+            <td class="txt-avaria" data-label="Avarias" id="avaria-lencol">0</td>
+            <td data-label="Total Geral" id="total-lencol"><b>0</b></td>
+          </tr>
+          <tr>
+            <td style="text-align: left;" data-label="Item"><b>Fronha casal</b></td>
+            <td class="txt-limpo" data-label="Estoque Limpo" id="limpo-fronha">0</td>
+            <td class="txt-lavagem" data-label="Em Lavagem" id="lavagem-fronha">0</td>
+            <td class="txt-avaria" data-label="Avarias" id="avaria-fronha">0</td>
+            <td data-label="Total Geral" id="total-fronha"><b>0</b></td>
+          </tr>
+          <tr>
+            <td style="text-align: left;" data-label="Item"><b>Toalha de banho</b></td>
+            <td class="txt-limpo" data-label="Estoque Limpo" id="limpo-toalha">0</td>
+            <td class="txt-lavagem" data-label="Em Lavagem" id="lavagem-toalha">0</td>
+            <td class="txt-avaria" data-label="Avarias" id="avaria-toalha">0</td>
+            <td data-label="Total Geral" id="total-toalha"><b>0</b></td>
+          </tr>
+          <tr>
+            <td style="text-align: left;" data-label="Item"><b>Pano de piso</b></td>
+            <td class="txt-limpo" data-label="Estoque Limpo" id="limpo-piso">0</td>
+            <td class="txt-lavagem" data-label="Em Lavagem" id="lavagem-piso">0</td>
+            <td class="txt-avaria" data-label="Avarias" id="avaria-piso">0</td>
+            <td data-label="Total Geral" id="total-piso"><b>0</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Formulário de Lançamentos -->
+    <div class="form-container">
+      <h2 id="titulo-form">Registrar Movimentação</h2>
+      <form id="mov-form">
+        <input type="hidden" id="editId" value="">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="tipo">Operação</label>
+            <select id="tipo" required onchange="ajustarRotulosCampos()">
+              <option value="SAIDA">Saída para Lavagem (Coleta)</option>
+              <option value="RETORNO">Retorno da Lavagem (Entrada)</option>
+              <option value="AVARIA">Avaria / Descarte</option>
+              <option value="INICIAL">Entrada / Ajuste de Estoque</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="item">Item</label>
+            <select id="item" required>
+              <option value="lencol">Lençol de cama casal</option>
+              <option value="fronha">Fronha de cama casal</option>
+              <option value="toalha">Toalha de banho</option>
+              <option value="piso">Pano de piso</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" id="quantidade" min="1" required placeholder="Ex: 10">
+          </div>
+
+          <div class="form-group">
+            <label for="lavanderia">Nome da Lavanderia</label>
+            <input type="text" id="lavanderia" placeholder="Ex: Lavanderia Express">
+          </div>
+
+          <div class="form-group">
+            <label for="dataHoraOp">Data e Hora da Operação</label>
+            <input type="datetime-local" id="dataHoraOp" required>
+          </div>
+
+          <div class="form-group">
+            <label for="funcConferente" id="lblConferente">Func. Motel (Conferência/Envio)</label>
+            <input type="text" id="funcConferente" required placeholder="Nome do funcionário do motel">
+          </div>
+
+          <div class="form-group">
+            <label for="funcRecebedor" id="lblRecebedor">Pessoa Lavanderia (Coletor/Driver)</label>
+            <input type="text" id="funcRecebedor" required placeholder="Nome de quem coletou/entregou">
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="obs">Observações</label>
+            <input type="text" id="obs" placeholder="Ex: Peças com mancha, entregue com atraso, etc.">
+          </div>
+        </div>
+
+        <button type="submit" id="btnSalvar" class="btn-submit">Salvar Registro</button>
+        <button type="button" id="btnCancelarEdit" class="btn-cancel" style="display: none;" onclick="cancelarEdicao()">Cancelar Edição</button>
+      </form>
+    </div>
+
+    <!-- Histórico de Lançamentos -->
+    <div class="table-container">
+      <div class="header-actions">
+        <h2>Histórico de Registros</h2>
+        <button type="button" class="btn-export" onclick="exportarCSV()">📥 Exportar para Excel (.CSV)</button>
+      </div>
+      <table class="hist-table">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Tipo</th>
+            <th>Item</th>
+            <th>Qtd</th>
+            <th>Lavanderia</th>
+            <th>Conferido por (Motel)</th>
+            <th>Entregue/Recebido por</th>
+            <th>Obs</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="historico-corpo">
+          <!-- Linhas do JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal de Autenticação Segura -->
+  <div class="modal-overlay" id="modalAuth">
+    <div class="modal-card">
+      <h3>Autorização Requerida</h3>
+      <p>Digite seu ID de Funcionário e Senha para prosseguir com esta alteração de segurança.</p>
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label for="authUserId">ID do Funcionário / Matrícula</label>
+        <input type="text" id="authUserId" placeholder="Ex: 101">
+      </div>
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="authUserPass">Senha</label>
+        <input type="password" id="authUserPass" placeholder="••••">
+      </div>
+      <button type="button" onclick="confirmarAutenticacao()" style="margin-bottom: 8px;">Confirmar Autorização</button>
+      <button type="button" class="btn-cancel" onclick="fecharModalAuth()">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    // Usuários com autorização de alteração (ID/Senha)
+    const USUARIOS_AUTORIZADOS = [
+      { id: "101", senha: "1234", nome: "Carlos (Gerente)" },
+      { id: "102", senha: "1234", nome: "Ana (Supervisora)" },
+      { id: "ADMIN", senha: "admin", nome: "Administrador" }
+    ];
+
+    const NORM_ITENS = {
+      lencol: "Lençol casal",
+      fronha: "Fronha casal",
+      toalha: "Toalha de banho",
+      piso: "Pano de piso"
+    };
+
+    document.getElementById('dataHoraOp').value = new Date().toISOString().slice(0, 16);
+
+    let registros = JSON.parse(localStorage.getItem('enxoval_completo_registros')) || [];
+    let acaoPendente = null;
+
+    const form = document.getElementById('mov-form');
+    const tabelaCorpo = document.getElementById('historico-corpo');
+
+    function ajustarRotulosCampos() {
+      const tipo = document.getElementById('tipo').value;
+      const lblConferente = document.getElementById('lblConferente');
+      const lblRecebedor = document.getElementById('lblRecebedor');
+
+      if (tipo === 'SAIDA') {
+        lblConferente.innerText = 'Func. Motel (Conferiu/Entregou)';
+        lblRecebedor.innerText = 'Pessoa Lavanderia (Coletou)';
+      } else if (tipo === 'RETORNO') {
+        lblConferente.innerText = 'Func. Motel (Conferiu/Recebeu)';
+        lblRecebedor.innerText = 'Pessoa Lavanderia (Entregou)';
+      } else {
+        lblConferente.innerText = 'Func. Responsável (Motel)';
+        lblRecebedor.innerText = 'Outros / Motorista';
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editId').value;
+
+      if (editId) {
+        abrirModalAuth({
+          tipoAcao: 'EDITAR',
+          idRegistro: parseInt(editId)
+        });
+      } else {
+        processarNovoRegistro();
+      }
+    });
+
+    function processarNovoRegistro() {
+      const tipo = document.getElementById('tipo').value;
+      const item = document.getElementById('item').value;
+      const quantidade = parseInt(document.getElementById('quantidade').value);
+      const lavanderia = document.getElementById('lavanderia').value || '-';
+      const rawDataHora = document.getElementById('dataHoraOp').value;
+      const funcConferente = document.getElementById('funcConferente').value;
+      const funcRecebedor = document.getElementById('funcRecebedor').value;
+      const obs = document.getElementById('obs').value;
+
+      const dataFormatada = new Date(rawDataHora).toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
+
+      const novoRegistro = {
+        id: Date.now(),
+        dataHora: dataFormatada,
+        rawDataHora,
+        tipo,
+        item,
+        quantidade,
+        lavanderia,
+        funcConferente,
+        funcRecebedor,
+        obs,
+        alteracoes: []
+      };
+
+      registros.unshift(novoRegistro);
+      salvarEAtualizar();
+      cancelarEdicao();
+    }
+
+    function solicitarEdicao(id) {
+      abrirModalAuth({
+        tipoAcao: 'PREPARAR_EDICAO',
+        idRegistro: id
+      });
+    }
+
+    function carregarDadosParaEdicao(id) {
+      const reg = registros.find(r => r.id === id);
+      if (!reg) return;
+
+      document.getElementById('editId').value = reg.id;
+      document.getElementById('tipo').value = reg.tipo;
+      document.getElementById('item').value = reg.item;
+      document.getElementById('quantidade').value = reg.quantidade;
+      document.getElementById('lavanderia').value = reg.lavanderia === '-' ? '' : reg.lavanderia;
+     
+      if (reg.rawDataHora) {
+        document.getElementById('dataHoraOp').value = reg.rawDataHora;
+      }
+
+      document.getElementById('funcConferente').value = reg.funcConferente || '';
+      document.getElementById('funcRecebedor').value = reg.funcRecebedor || '';
+      document.getElementById('obs').value = reg.obs || '';
+
+      document.getElementById('titulo-form').innerText = '✏️ Editar Lançamento (Autorizado)';
+      const btnSalvar = document.getElementById('btnSalvar');
+      btnSalvar.innerText = 'Atualizar Lançamento';
+      btnSalvar.classList.add('btn-edit-mode');
+      document.getElementById('btnCancelarEdit').style.display = 'block';
+
+      ajustarRotulosCampos();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function executarEdicaoAutorizada(usuario) {
+      const editId = document.getElementById('editId').value;
+      const idx = registros.findIndex(r => r.id == editId);
+
+      if (idx !== -1) {
+        const rawDataHora = document.getElementById('dataHoraOp').value;
+        const dataFormatada = new Date(rawDataHora).toLocaleString('pt-BR', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        });
+
+        const logAlteracao = {
+          usuario: usuario.nome,
+          dataHora: new Date().toLocaleString('pt-BR')
+        };
+
+        if (!registros[idx].alteracoes) registros[idx].alteracoes = [];
+        registros[idx].alteracoes.push(logAlteracao);
+
+        registros[idx].tipo = document.getElementById('tipo').value;
+        registros[idx].item = document.getElementById('item').value;
+        registros[idx].quantidade = parseInt(document.getElementById('quantidade').value);
+        registros[idx].lavanderia = document.getElementById('lavanderia').value || '-';
+        registros[idx].dataHora = dataFormatada;
+        registros[idx].rawDataHora = rawDataHora;
+        registros[idx].funcConferente = document.getElementById('funcConferente').value;
+        registros[idx].funcRecebedor = document.getElementById('funcRecebedor').value;
+        registros[idx].obs = document.getElementById('obs').value;
+
+        salvarEAtualizar();
+        cancelarEdicao();
+        alert(`Lançamento atualizado com sucesso por ${usuario.nome}.`);
+      }
+    }
+
+    function solicitarExclusao(id) {
+      abrirModalAuth({
+        tipoAcao: 'EXCLUIR',
+        idRegistro: id
+      });
+    }
+
+    function executarExclusaoAutorizada(id, usuario) {
+      if (confirm(`Confirmar exclusão definitiva do lançamento por ${usuario.nome}?`)) {
+        registros = registros.filter(r => r.id !== id);
+        salvarEAtualizar();
+        alert('Lançamento excluído com sucesso.');
+      }
+    }
+
+    /* AUTENTICAÇÃO E MODAL */
+    function abrirModalAuth(acao) {
+      acaoPendente = acao;
+      document.getElementById('authUserId').value = '';
+      document.getElementById('authUserPass').value = '';
+      document.getElementById('modalAuth').style.display = 'flex';
+      document.getElementById('authUserId').focus();
+    }
+
+    function fecharModalAuth() {
+      document.getElementById('modalAuth').style.display = 'none';
+      acaoPendente = null;
+    }
+
+    function confirmarAutenticacao() {
+      const idInput = document.getElementById('authUserId').value.trim();
+      const passInput = document.getElementById('authUserPass').value.trim();
+
+      const usuarioValido = USUARIOS_AUTORIZADOS.find(u => u.id.toUpperCase() === idInput.toUpperCase() && u.senha === passInput);
+
+      if (!usuarioValido) {
+        alert('ID ou Senha de autorização incorretos.');
+        return;
+      }
+
+      const acao = acaoPendente;
+      fecharModalAuth();
+
+      if (acao.tipoAcao === 'PREPARAR_EDICAO') {
+        carregarDadosParaEdicao(acao.idRegistro);
+      } else if (acao.tipoAcao === 'EDITAR') {
+        executarEdicaoAutorizada(usuarioValido);
+      } else if (acao.tipoAcao === 'EXCLUIR') {
+        executarExclusaoAutorizada(acao.idRegistro, usuarioValido);
+      }
+    }
+
+    function cancelarEdicao() {
+      document.getElementById('editId').value = '';
+      form.reset();
+      document.getElementById('dataHoraOp').value = new Date().toISOString().slice(0, 16);
+     
+      document.getElementById('titulo-form').innerText = 'Registrar Movimentação';
+      const btnSalvar = document.getElementById('btnSalvar');
+      btnSalvar.innerText = 'Salvar Registro';
+      btnSalvar.classList.remove('btn-edit-mode');
+      document.getElementById('btnCancelarEdit').style.display = 'none';
+
+      ajustarRotulosCampos();
+    }
+
+    function salvarEAtualizar() {
+      localStorage.setItem('enxoval_completo_registros', JSON.stringify(registros));
+      calcularEExibirSaldos();
+      renderizarTabela();
+    }
+
+    function calcularEExibirSaldos() {
+      const saldos = {
+        lencol: { limpo: 0, lavagem: 0, avaria: 0 },
+        fronha: { limpo: 0, lavagem: 0, avaria: 0 },
+        toalha: { limpo: 0, lavagem: 0, avaria: 0 },
+        piso: { limpo: 0, lavagem: 0, avaria: 0 }
+      };
+
+      const registrosInvertidos = [...registros].reverse();
+
+      registrosInvertidos.forEach(reg => {
+        const target = saldos[reg.item];
+        if (reg.tipo === 'INICIAL') {
+          target.limpo += reg.quantidade;
+        } else if (reg.tipo === 'SAIDA') {
+          target.limpo -= reg.quantidade;
+          target.lavagem += reg.quantidade;
+        } else if (reg.tipo === 'RETORNO') {
+          target.lavagem -= reg.quantidade;
+          target.limpo += reg.quantidade;
+        } else if (reg.tipo === 'AVARIA') {
+          target.limpo -= reg.quantidade;
+          target.avaria += reg.quantidade;
+        }
+      });
+
+      ['lencol', 'fronha', 'toalha', 'piso'].forEach(key => {
+        document.getElementById(`limpo-${key}`).innerText = saldos[key].limpo;
+        document.getElementById(`lavagem-${key}`).innerText = saldos[key].lavagem;
+        document.getElementById(`avaria-${key}`).innerText = saldos[key].avaria;
+       
+        const total = saldos[key].limpo + saldos[key].lavagem + saldos[key].avaria;
+        document.getElementById(`total-${key}`).innerText = total;
+      });
+    }
+
+    function renderizarTabela() {
+      tabelaCorpo.innerHTML = '';
+
+      registros.forEach(reg => {
+        const tr = document.createElement('tr');
+       
+        let badgeClass = 'badge-saida';
+        let tipoTexto = 'Saída (Coleta)';
+
+        if (reg.tipo === 'RETORNO') {
+          badgeClass = 'badge-retorno';
+          tipoTexto = 'Retorno (Entrada)';
+        } else if (reg.tipo === 'AVARIA') {
+          badgeClass = 'badge-avaria';
+          tipoTexto = 'Avaria / Descarte';
+        } else if (reg.tipo === 'INICIAL') {
+          badgeClass = 'badge-inicial';
+          tipoTexto = 'Entrada / Ajuste';
+        }
+
+        let htmlAudit = '';
+        if (reg.alteracoes && reg.alteracoes.length > 0) {
+          const ultimaAlt = reg.alteracoes[reg.alteracoes.length - 1];
+          htmlAudit = `<div class="audit-info">✏️ Corrigido por ${ultimaAlt.usuario} em ${ultimaAlt.dataHora}</div>`;
+        }
+
+        tr.innerHTML = `
+          <td data-label="Data/Hora">${reg.dataHora} ${htmlAudit}</td>
+          <td data-label="Tipo"><span class="badge ${badgeClass}">${tipoTexto}</span></td>
+          <td data-label="Item">${NORM_ITENS[reg.item]}</td>
+          <td data-label="Qtd">${reg.quantidade}</td>
+          <td data-label="Lavanderia">${reg.lavanderia}</td>
+          <td data-label="Conferido por">${reg.funcConferente || '-'}</td>
+          <td data-label="Entregue/Recebido por">${reg.funcRecebedor || '-'}</td>
+          <td data-label="Obs">${reg.obs || '-'}</td>
+          <td data-label="Ações">
+            <div class="action-btns">
+              <button type="button" class="btn-action btn-print-action" title="Imprimir Comprovante" onclick="imprimirComprovante(${reg.id})">🖨️</button>
+              <button type="button" class="btn-action btn-edit-action" title="Editar Lançamento" onclick="solicitarEdicao(${reg.id})">✏️</button>
+              <button type="button" class="btn-action btn-delete-action" title="Excluir Lançamento" onclick="solicitarExclusao(${reg.id})">🗑️</button>
+            </div>
+          </td>
+        `;
+        tabelaCorpo.appendChild(tr);
+      });
+    }
+
+    // Exportação para CSV (Excel)
+    function exportarCSV() {
+      if (registros.length === 0) {
+        alert('Não há registros para exportar.');
+        return;
+      }
+
+      let csvContent = "\uFEFF";
+      csvContent += "Data/Hora;Tipo;Item;Quantidade;Lavanderia;Conferente Motel;Terceiro Lavanderia;Observacao;Ultima_Alteracao\n";
+
+      registros.forEach(reg => {
+        let altTxt = "";
+        if (reg.alteracoes && reg.alteracoes.length > 0) {
+          const u = reg.alteracoes[reg.alteracoes.length - 1];
+          altTxt = `Alterado por ${u.usuario} em ${u.dataHora}`;
+        }
+
+        const linha = [
+          `"${reg.dataHora}"`,
+          `"${reg.tipo}"`,
+          `"${NORM_ITENS[reg.item]}"`,
+          `"${reg.quantidade}"`,
+          `"${reg.lavanderia}"`,
+          `"${reg.funcConferente || ''}"`,
+          `"${reg.funcRecebedor || ''}"`,
+          `"${reg.obs || ''}"`,
+          `"${altTxt}"`
+        ].join(';');
+        csvContent += linha + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `enxoval_movimentacoes_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Gerar Comprovante
+    function imprimirComprovante(id) {
+      const reg = registros.find(r => r.id === id);
+      if (!reg) return;
+
+      let tipoTitulo = "COMPROVANTE CONTROLE DE ENXOVAL MOTEL SKORPIONS";
+      let papelMotel = "Funcionário do Motel (Conferente)";
+      let papelLavanderia = "Responsável / Motorista Lavanderia";
+
+      if (reg.tipo === 'SAIDA') {
+        tipoTitulo = "COMPROVANTE DE COLETA / SAÍDA";
+        papelMotel = "Entregue e Conferido por (Motel)";
+        papelLavanderia = "Coletado e Recebido por (Lavanderia)";
+      } else if (reg.tipo === 'RETORNO') {
+        tipoTitulo = "COMPROVANTE DE ENTREGA / RETORNO";
+        papelMotel = "Conferido e Recebido por (Motel)";
+        papelLavanderia = "Entregue por (Lavanderia)";
+      }
+
+      const janelaImpressao = window.open('', '', 'width=650,height=650');
+      janelaImpressao.document.write(`
+        <html>
+        <head>
+          <title>${tipoTitulo}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+            h2 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            .info { margin: 20px 0; }
+            .info p { margin: 8px 0; font-size: 14px; }
+            .ass { margin-top: 50px; display: flex; justify-content: space-between; }
+            .linha-ass { border-top: 1px solid #000; width: 45%; text-align: center; padding-top: 5px; font-size: 11px; }
+          </style>
+        </head>
+        <body>
+          <h2>${tipoTitulo}</h2>
+          <div class="info">
+            <p><strong>Nº Registro:</strong> #${reg.id}</p>
+            <p><strong>Data/Hora Operação:</strong> ${reg.dataHora}</p>
+            <p><strong>Item:</strong> ${NORM_ITENS[reg.item]}</p>
+            <p><strong>Quantidade:</strong> ${reg.quantidade} unidade(s)</p>
+            <p><strong>Lavanderia:</strong> ${reg.lavanderia}</p>
+            <p><strong>Conferência Motel:</strong> ${reg.funcConferente || '-'}</p>
+            <p><strong>Pessoa Lavanderia:</strong> ${reg.funcRecebedor || '-'}</p>
+            <p><strong>Observações:</strong> ${reg.obs || 'Nenhuma'}</p>
+          </div>
+          <div class="ass">
+            <div class="linha-ass">
+              <strong>${reg.funcConferente || 'Assinatura'}</strong><br>${papelMotel}
+            </div>
+            <div class="linha-ass">
+              <strong>${reg.funcRecebedor || 'Assinatura'}</strong><br>${papelLavanderia}
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      janelaImpressao.document.close();
+      janelaImpressao.focus();
+      setTimeout(() => { janelaImpressao.print(); }, 250);
+    }
+
+    /* INSTALAÇÃO PWA / APLICATIVO */
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwaBanner').style.display = 'flex';
+    });
+
+    document.getElementById('btnInstallPwa').addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            document.getElementById('pwaBanner').style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    // Registro do ServiceWorker embutido via Data URI
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', (e) => self.skipWaiting());
+        self.addEventListener('activate', (e) => self.clients.claim());
+        self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+      `;
+      const blob = new Blob([swCode], { type: 'text/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl).catch(() => {});
+    }
+
+    ajustarRotulosCampos();
+    salvarEAtualizar();
+  </script>
+</body>
+</html>
+
